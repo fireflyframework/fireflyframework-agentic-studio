@@ -116,6 +116,19 @@ class TestRegistryTools:
 
 
 class TestRegistryPatterns:
+    @pytest.fixture(autouse=True)
+    def _isolate_reasoning_registry(self):
+        # fireflyframework-agentic auto-registers six built-in reasoning patterns
+        # at import time. Snapshot and restore so each test sees a clean registry.
+        from fireflyframework_agentic.reasoning.registry import reasoning_registry
+
+        snapshot = dict(reasoning_registry._patterns)
+        reasoning_registry.clear()
+        yield
+        reasoning_registry.clear()
+        for name, pattern in snapshot.items():
+            reasoning_registry.register(name, pattern)
+
     async def test_patterns_returns_empty_list_when_none_registered(self, client: httpx.AsyncClient):
         resp = await client.get("/api/registry/patterns")
         assert resp.status_code == 200
