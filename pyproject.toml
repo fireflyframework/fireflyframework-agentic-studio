@@ -59,6 +59,11 @@ Framework = "https://github.com/fireflyframework/fireflyframework-agentic"
 requires = ["uv_build>=0.9.5,<0.10.0"]
 build-backend = "uv_build"
 
+# TODO: remove once fireflyframework-agentic is published to PyPI.
+# Until then, resolve it directly from GitHub.
+[tool.uv.sources]
+fireflyframework-agentic = { git = "https://github.com/fireflyframework/fireflyframework-agentic.git", branch = "refactor/rename-to-agentic" }
+
 [tool.ruff]
 target-version = "py313"
 line-length = 120
