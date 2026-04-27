@@ -1,0 +1,82 @@
+[project]
+name = "fireflyframework-agentic-studio"
+version = "26.02.07"
+description = "Visual IDE and runtime for fireflyframework-agentic. Drag-and-drop pipeline builder, code generation, AI assistant, project API, scheduling, and tunnel exposure."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Firefly Software Solutions Inc" }
+]
+maintainers = [
+    { name = "Firefly Software Solutions Inc" }
+]
+requires-python = ">=3.13"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Pydantic :: 2",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+keywords = ["genai", "agents", "studio", "ide", "visual", "pydantic-ai", "fireflyframework"]
+dependencies = [
+    "fireflyframework-agentic>=26.02.07",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "httpx>=0.28.0",
+    "strawberry-graphql[fastapi]>=0.252.0",
+    "apscheduler>=4.0.0a5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "testcontainers>=4.10.0",
+    "ruff>=0.15.0",
+    "pyright>=1.1.0",
+    "pre-commit>=3.8.0",
+]
+
+[project.scripts]
+firefly = "fireflyframework_agentic_studio.cli:main"
+
+[project.urls]
+Homepage = "https://fireflyframework.org/"
+Documentation = "https://github.com/fireflyframework/fireflyframework-agentic-studio/tree/main/docs"
+Repository = "https://github.com/fireflyframework/fireflyframework-agentic-studio"
+Issues = "https://github.com/fireflyframework/fireflyframework-agentic-studio/issues"
+Changelog = "https://github.com/fireflyframework/fireflyframework-agentic-studio/blob/main/CHANGELOG.md"
+Framework = "https://github.com/fireflyframework/fireflyframework-agentic"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "TC"]
+ignore = ["E501", "TC001", "TC002", "TC003", "UP040", "UP046", "B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["fireflyframework_agentic_studio"]
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "basic"
+include = ["src"]
+exclude = ["tests/**", "examples/**"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
