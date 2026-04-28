@@ -61,8 +61,10 @@ build-backend = "uv_build"
 
 # TODO: remove once fireflyframework-agentic is published to PyPI.
 # Until then, resolve it directly from GitHub.
+# To pin a reproducible release instead of tracking main, swap the line below for:
+#   fireflyframework-agentic = { git = "https://github.com/fireflyframework/fireflyframework-agentic.git", tag = "v26.04.28" }
 [tool.uv.sources]
-fireflyframework-agentic = { git = "https://github.com/fireflyframework/fireflyframework-agentic.git", tag = "v26.04.28" }
+fireflyframework-agentic = { git = "https://github.com/fireflyframework/fireflyframework-agentic.git", branch = "main" }
 
 [tool.ruff]
 target-version = "py313"
