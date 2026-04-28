@@ -1,0 +1,121 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to release (e.g., 26.04.28). Must already be pushed to the repo.'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build wheel + sdist
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.value }}
+    steps:
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.value }}
+
+      - name: Verify tag matches pyproject version
+        run: |
+          tag="${{ steps.tag.outputs.value }}"
+          pv=$(grep -E '^version' pyproject.toml | head -1 | sed -E 's/.*"(.*)".*/\1/')
+          if [ "$tag" != "$pv" ]; then
+            echo "::error::Tag '$tag' does not match pyproject.toml version '$pv'."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: studio-frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: studio-frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Stage frontend into package
+        run: |
+          mkdir -p src/fireflyframework_agentic_studio/static
+          cp -r studio-frontend/build/. src/fireflyframework_agentic_studio/static/
+
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Build distributions
+        run: uv build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build.outputs.tag }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Extract release notes from CHANGELOG
+        run: |
+          tag="${{ needs.build.outputs.tag }}"
+          awk -v tag="$tag" '
+            $0 ~ "^## \\[" tag "\\]" { found=1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > /tmp/notes.md
+          if [ ! -s /tmp/notes.md ]; then
+            printf "Release %s\n" "$tag" > /tmp/notes.md
+          fi
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ needs.build.outputs.tag }}"
+          gh release create "$tag" \
+            --title "$tag" \
+            --notes-file /tmp/notes.md \
+            --verify-tag \
+            dist/*

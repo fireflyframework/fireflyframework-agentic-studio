@@ -1,6 +1,6 @@
 [project]
 name = "fireflyframework-agentic-studio"
-version = "26.02.07"
+version = "26.04.28"
 description = "Visual IDE and runtime for fireflyframework-agentic. Drag-and-drop pipeline builder, code generation, AI assistant, project API, scheduling, and tunnel exposure."
 readme = "README.md"
 license = { text = "Apache-2.0" }
