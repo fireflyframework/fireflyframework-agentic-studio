@@ -382,7 +382,7 @@ def _create_smith_tools() -> list:
 
         docs: dict[str, Any] = {}
         try:
-            from fireflyframework_agentic._version import __version__
+            from fireflyframework_agentic import __version__
 
             docs["version"] = __version__
         except Exception:

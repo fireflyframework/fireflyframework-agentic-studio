@@ -521,7 +521,7 @@ def create_registry_tools() -> list[BaseTool]:
 
         # Framework version
         try:
-            from fireflyframework_agentic._version import __version__
+            from fireflyframework_agentic import __version__
 
             docs["version"] = __version__
         except Exception:
